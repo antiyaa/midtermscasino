@@ -188,7 +188,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 <body>
     <div class="container">
-        <h2>💰 Manage Balance</h2>
+        <h2>Manage Balance</h2>
 
         <div class="balance">
             <div class="balance-label">Current Balance</div>
@@ -211,10 +211,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <label>Action</label>
                 <div class="radio-group">
                     <label>
-                        <input type="radio" name="action" value="deposit" required> 💰 Deposit
+                        <input type="radio" name="action" value="deposit" required> Deposit
                     </label>
                     <label>
-                        <input type="radio" name="action" value="withdraw" required> 💸 Withdraw
+                        <input type="radio" name="action" value="withdraw" required> Withdraw
                     </label>
                 </div>
             </div>
@@ -222,7 +222,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <button type="submit">Submit</button>
         </form>
 
-        <button class="back-btn" onclick="location.href='Homepage.php'">← Back to Homepage</button>
+        <button class="back-btn" onclick="location.href='Homepage.php'">Back to Homepage</button>
 
         <div class="info">
             Minimum transaction: 100 credits

@@ -8,7 +8,6 @@ if (!isset($_SESSION['current_bet'])) {
     $_SESSION['current_bet'] = 10;
 }
 
-// Colors used in the game
 $colors = ['Red', 'Green', 'Blue', 'Yellow', 'Purple', 'Orange'];
 $color_classes = [
     'Red'    => '#b91c1c',
@@ -16,10 +15,9 @@ $color_classes = [
     'Blue'   => '#1d4ed8',
     'Yellow' => '#ca8a04',
     'Purple' => '#6b21a8',
-    'Orange' => '#c2410c'
+    'Orange' => '#c2410f'
 ];
 
-// Game state variables
 if (!isset($_SESSION['color_bet'])) $_SESSION['color_bet'] = null;
 if (!isset($_SESSION['color_active'])) $_SESSION['color_active'] = false;
 if (!isset($_SESSION['color_chosen'])) $_SESSION['color_chosen'] = null;
@@ -28,9 +26,9 @@ $message = '';
 $die1 = null;
 $die2 = null;
 $match_count = 0;
-$game_result = null; // 'win' or 'lose'
+$show_win_banner = false;
+$show_loss_banner = false;
 
-// Handle actions
 $action = $_POST['action'] ?? $_GET['action'] ?? '';
 
 if ($action === 'exit') {
@@ -46,16 +44,12 @@ if ($action === 'stop') {
     $message = "Game stopped. You can place a new bet.";
 }
 
-// Bet adjustment via +/- buttons
 if (isset($_POST['adjust'])) {
-    // Store the selected color if present (so it doesn't get lost)
     if (isset($_POST['color']) && in_array($_POST['color'], $colors)) {
         $_SESSION['color_chosen'] = $_POST['color'];
     }
-
     $adjust = $_POST['adjust'];
     $current_bet = $_SESSION['current_bet'];
-    $balance = $_SESSION['balance'];
     switch ($adjust) {
         case '-100': $new_bet = $current_bet - 100; break;
         case '-10':  $new_bet = $current_bet - 10; break;
@@ -65,7 +59,6 @@ if (isset($_POST['adjust'])) {
     }
     $new_bet = max(10, min(5000, $new_bet));
     $_SESSION['current_bet'] = $new_bet;
-    // If a bet was confirmed, clear it because amount changed
     if ($_SESSION['color_active']) {
         unset($_SESSION['color_bet'], $_SESSION['color_chosen']);
         $_SESSION['color_active'] = false;
@@ -73,7 +66,6 @@ if (isset($_POST['adjust'])) {
     }
 }
 
-// Confirm bet
 if ($action === 'confirm_bet') {
     $bet = (int)($_POST['bet'] ?? $_SESSION['current_bet']);
     $chosen_color = $_POST['color'] ?? '';
@@ -91,7 +83,6 @@ if ($action === 'confirm_bet') {
     }
 }
 
-// Roll dice
 if ($action === 'roll' && $_SESSION['color_active']) {
     $bet = $_SESSION['color_bet'];
     $chosen = $_SESSION['color_chosen'];
@@ -106,22 +97,21 @@ if ($action === 'roll' && $_SESSION['color_active']) {
         $_SESSION['balance'] -= $bet;
         if ($match_count == 0) {
             $message = "You rolled $die1 and $die2. No match. You lose $bet credits. New balance: {$_SESSION['balance']}.";
-            $game_result = 'lose';
+            $show_loss_banner = true;
         } elseif ($match_count == 1) {
             $winnings = $bet * 2;
             $_SESSION['balance'] += $winnings;
             $message = "You rolled $die1 and $die2. One match! You win $winnings credits (profit " . ($winnings - $bet) . "). New balance: {$_SESSION['balance']}.";
-            $game_result = 'win';
+            $show_win_banner = true;
         } else {
             $winnings = $bet * 3;
             $_SESSION['balance'] += $winnings;
             $message = "You rolled $die1 and $die2. Both match! You win $winnings credits (profit " . ($winnings - $bet) . "). New balance: {$_SESSION['balance']}.";
-            $game_result = 'win';
+            $show_win_banner = true;
         }
     }
 }
 
-// Prepare values for display
 $current_bet = $_SESSION['current_bet'];
 $color_active = $_SESSION['color_active'];
 $chosen_color = $_SESSION['color_chosen'];
@@ -343,7 +333,7 @@ $balance_display = number_format($balance);
             gap: 20px;
         }
 
-        /* --- Enlarged dice area with result banner --- */
+        /* --- Enlarged dice area with result banner (updated) --- */
         .dice-area {
             flex: 1;
             background: rgba(255,255,255,0.05);
@@ -356,21 +346,25 @@ $balance_display = number_format($balance);
             justify-content: center;
         }
 
-        .result-banner {
+        /* Banner styling copied from first program */
+        .banner {
+            text-align: center;
             font-size: 3rem;
             font-weight: bold;
-            text-align: center;
-            margin-bottom: 20px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
+            margin-bottom: 15px;
+            animation: pulse 0.5s ease-in-out;
         }
-        .result-banner.win {
-            color: #ffd700;
-            text-shadow: 0 0 10px #ffd700, 0 0 20px #ffb347;
+        .win-banner {
+            color: #d4af37;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
         }
-        .result-banner.lose {
-            color: #ff6b6b;
-            text-shadow: 0 0 10px #ff6b6b;
+        .loss-banner {
+            color: #dc3545;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        @keyframes pulse {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
         }
 
         .dice-row {
@@ -415,7 +409,7 @@ $balance_display = number_format($balance);
             .dice-row {
                 gap: 20px;
             }
-            .result-banner {
+            .banner {
                 font-size: 2rem;
             }
         }
@@ -430,7 +424,7 @@ $balance_display = number_format($balance);
                 width: 50px;
                 height: 50px;
             }
-            .result-banner {
+            .banner {
                 font-size: 1.5rem;
             }
         }
@@ -513,7 +507,7 @@ $balance_display = number_format($balance);
             <div class="bet-panel">
                 <div class="bet-amount">
                     <span>Your Bet:</span>
-                    <input type="text" name="bet_display" class="bet-input" value="<?php echo $current_bet; ?>" readonly>
+                    <input type="text" name="bet_display" class="bet-input" value="<?php echo $current_bet; ?>">
                 </div>
 
                 <div class="bet-buttons">
@@ -536,10 +530,11 @@ $balance_display = number_format($balance);
     <div class="right">
         <div class="dice-area">
             <h3>DICE RESULTS</h3>
-            <?php if ($game_result): ?>
-                <div class="result-banner <?php echo $game_result; ?>">
-                    <?php echo strtoupper($game_result); ?>
-                </div>
+            <!-- New banner structure -->
+            <?php if ($show_win_banner): ?>
+                <div class="banner win-banner">YOU WIN</div>
+            <?php elseif ($show_loss_banner): ?>
+                <div class="banner loss-banner">YOU LOSE</div>
             <?php endif; ?>
             <div class="dice-row">
                 <div class="die">
@@ -570,17 +565,17 @@ $balance_display = number_format($balance);
         <div class="action-buttons">
             <form method="post" style="display: inline;">
                 <input type="hidden" name="action" value="roll">
-                <button type="submit" class="roll-btn" <?php echo $color_active ? '' : 'disabled'; ?>>🎲 ROLL</button>
+                <button type="submit" class="roll-btn" <?php echo $color_active ? '' : 'disabled'; ?>>ROLL</button>
             </form>
             <?php if ($color_active): ?>
                 <form method="post" style="display: inline;">
                     <input type="hidden" name="action" value="stop">
-                    <button type="submit" class="secondary-btn">⏹️ STOP</button>
+                    <button type="submit" class="secondary-btn">STOP</button>
                 </form>
             <?php endif; ?>
             <form method="post" style="display: inline;">
                 <input type="hidden" name="action" value="exit">
-                <button type="submit" class="secondary-btn">🚪 EXIT</button>
+                <button type="submit" class="secondary-btn">EXIT</button>
             </form>
         </div>
     </div>

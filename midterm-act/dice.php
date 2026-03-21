@@ -20,6 +20,8 @@ $banker_dice2 = null;
 $player_sum = null;
 $banker_sum = null;
 $show_win_banner = false;
+$show_loss_banner = false;
+$show_tie_banner = false;
 
 $action = $_POST['action'] ?? $_GET['action'] ?? '';
 
@@ -67,13 +69,15 @@ if ($action === 'roll' && $_SESSION['dice_active']) {
         if ($player_sum > $banker_sum) {
             $_SESSION['balance'] += ($bet * 2);
             $profit = $bet;
-            $message = "YOU WON! You earned +" . ($bet * 2) . " credits (profit $profit). New balance: {$_SESSION['balance']}.";
+            $message = "You earned +" . ($bet * 2) . " New balance: {$_SESSION['balance']}.";
             $show_win_banner = true;
         } elseif ($player_sum < $banker_sum) {
-            $message = "YOU LOST! You lost $bet credits. New balance: {$_SESSION['balance']}.";
+            $message = "You lost $bet credits. New balance: {$_SESSION['balance']}.";
+            $show_loss_banner = true;
         } else {
             $_SESSION['balance'] += $bet;
-            $message = "IT'S A TIE! Bet returned. New balance: {$_SESSION['balance']}.";
+            $message = "Bet returned. New balance: {$_SESSION['balance']}.";
+            $show_tie_banner = true;
         }
     }
 }
@@ -273,14 +277,24 @@ $balance_display = number_format($_SESSION['balance']);
             background-color: #f0f0f0;
         }
 
-        .win-banner {
+        .banner {
             text-align: center;
             font-size: 3rem;
             font-weight: bold;
-            color: #d4af37;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
             margin-bottom: 15px;
             animation: pulse 0.5s ease-in-out;
+        }
+        .win-banner {
+            color: #d4af37;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .loss-banner {
+            color: #dc3545;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        .tie-banner {
+            color: #6c757d;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
         }
 
         @keyframes pulse {
@@ -349,7 +363,7 @@ $balance_display = number_format($_SESSION['balance']);
             .game-status-message {
                 font-size: 1rem;
             }
-            .win-banner {
+            .banner {
                 font-size: 2rem;
             }
         }
@@ -372,7 +386,7 @@ $balance_display = number_format($_SESSION['balance']);
 <div class="back-container">
     <form method="post" style="display:inline;">
         <input type="hidden" name="action" value="back">
-        <button type="submit" class="back-btn">← Back to Homepage</button>
+        <button type="submit" class="back-btn">Back to Homepage</button>
     </form>
 </div>
 
@@ -424,7 +438,11 @@ $balance_display = number_format($_SESSION['balance']);
     <div class="result-section">
         <div class="section-title">GAME RESULT</div>
         <?php if ($show_win_banner): ?>
-        <div class="win-banner">YOU WIN</div>
+        <div class="banner win-banner">YOU WIN</div>
+        <?php elseif ($show_loss_banner): ?>
+        <div class="banner loss-banner">YOU LOSE</div>
+        <?php elseif ($show_tie_banner): ?>
+        <div class="banner tie-banner">TIE</div>
         <?php endif; ?>
         <div class="dice-container">
             <div class="dice-player">
