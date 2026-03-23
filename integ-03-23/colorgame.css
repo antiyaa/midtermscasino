@@ -1,0 +1,341 @@
+* {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0a0c15;
+            color: #eee;
+            font-family: Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- Header (matching other games) --- */
+        header {
+            width: 100%;
+            border-top: 5px solid #c5a059;
+            background-color: #121826;
+            border-bottom: 5px solid #c5a059;
+            padding: 15px 0;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .header-left, .header-right {
+            width: 150px;
+            padding: 0 20px;
+            color: white;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            line-height: 3rem;
+        }
+        .header-left {
+            justify-content: flex-start;
+        }
+        .header-right {
+            justify-content: flex-end;
+        }
+        .user-icon {
+            background-color: #7b818a;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+        .balance-amount {
+            font-weight: bold;
+        }
+        header h1 {
+            color: #d4af37;
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 3rem;
+            letter-spacing: 2px;
+            font-weight: normal;
+            margin: 0;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            white-space: nowrap;
+            line-height: 3rem;
+        }
+
+        /* Main layout */
+        .container {
+            flex: 1;
+            display: flex;
+            gap: 25px;
+            padding: 25px;
+        }
+
+        /* Left column */
+        .left {
+            flex: 1;
+            background: rgba(255,255,255,0.05);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #f5b04240;
+        }
+
+        .left h2 {
+            color: #f5b042;
+            margin-bottom: 15px;
+        }
+
+        /* Color radio buttons */
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin: 20px 0;
+        }
+
+        .color-option {
+            display: block;
+        }
+
+        .color-option input {
+            display: none;
+        }
+
+        .color-label {
+            display: block;
+            padding: 10px;
+            text-align: center;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        .color-option input:checked + .color-label {
+            box-shadow: 0 0 0 2px white, 0 0 0 4px #f5b042;
+            transform: scale(1.02);
+        }
+
+        /* Bet controls */
+        .bet-panel {
+            background: #0f111a;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+        }
+
+        .bet-amount {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+
+        .bet-amount span {
+            font-weight: bold;
+        }
+
+        .bet-input {
+            background: #1f2937;
+            color: white;
+            border: 1px solid #f5b042;
+            padding: 5px 10px;
+            border-radius: 5px;
+            width: 100px;
+            text-align: center;
+            font-size: 1rem;
+        }
+
+        .bet-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin: 15px 0;
+        }
+
+        .bet-buttons button {
+            background: #1e293b;
+            border: 1px solid #f5b042;
+            color: #f5b042;
+            padding: 5px 12px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .bet-buttons button:hover {
+            background: #2d3a4e;
+        }
+
+        .minmax {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: #aaa;
+            margin-top: 8px;
+        }
+
+        .confirm-btn {
+            width: 100%;
+            background: #f5b042;
+            color: #111;
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+
+        .confirm-btn:hover {
+            background: #f5a52e;
+        }
+
+        /* Right column */
+        .right {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* --- Enlarged dice area with result banner --- */
+        .dice-area {
+            flex: 1;
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid #f5b04240;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .result-banner {
+            font-size: 3rem;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        .result-banner.win {
+            color: #ffd700;
+            text-shadow: 0 0 10px #ffd700, 0 0 20px #ffb347;
+        }
+        .result-banner.lose {
+            color: #ff6b6b;
+            text-shadow: 0 0 10px #ff6b6b;
+        }
+
+        .dice-row {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .die {
+            width: 180px;
+            height: 200px;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            background: #1e293b;
+            border: 2px solid #f5b042;
+            font-size: 1.5rem;
+        }
+
+        .die-color {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            margin: 15px auto;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 800px) {
+            .die {
+                width: 140px;
+                height: 160px;
+            }
+            .die-color {
+                width: 70px;
+                height: 70px;
+            }
+            .dice-row {
+                gap: 20px;
+            }
+            .result-banner {
+                font-size: 2rem;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .die {
+                width: 100px;
+                height: 120px;
+                font-size: 1rem;
+            }
+            .die-color {
+                width: 50px;
+                height: 50px;
+            }
+            .result-banner {
+                font-size: 1.5rem;
+            }
+        }
+
+        .message-box {
+            background: #111;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            color: #ffd966;
+            border-left: 4px solid #f5b042;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .roll-btn {
+            background: linear-gradient(to right, #f5b042, #f5a52e);
+            border: none;
+            padding: 12px 35px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .roll-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .secondary-btn {
+            background: #2d3748;
+            border: 1px solid #f5b042;
+            color: #f5b042;
+            padding: 8px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .secondary-btn:hover {
+            background: #3b4559;
+        }

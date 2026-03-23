@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Casino Ni Lady</title>
+    <style>
+
+/* --- RESET --- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+/* --- COLOR VARIABLES --- */
+:root {
+    --mahogany:       #0E0500;
+    --imperial-red:   #C0152A;
+    --burnished-gold: #D4A017;
+    --warm-champagne: #F5DFA0;
+    --deep-burgundy:  #1C0A08;
+    --gold-dim:       rgba(212,160,23,0.2);
+    --gold-glow:      rgba(212,160,23,0.35);
+    --text-muted:     rgba(245,223,160,0.5);
+}
+
+/* --- BODY --- */
+body {
+    background: radial-gradient(circle at top, #1C0A08, #0E0500);
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+    color: var(--warm-champagne);
+}
+
+/* --- HEADER --- */
+header {
+    background: linear-gradient(90deg, #0E0500, #1C0A08);
+    text-align: center;
+    padding: 14px 0;
+    border-bottom: 2px solid var(--burnished-gold);
+    border-top: 2px solid var(--burnished-gold);
+    box-shadow: 0 0 18px var(--gold-glow);
+}
+
+header h1 {
+    color: var(--burnished-gold);
+    font-size: 2.8rem;
+    letter-spacing: 4px;
+    font-family: 'Times New Roman', serif;
+    text-shadow: 0 0 14px rgba(212,160,23,0.5);
+}
+
+/* --- LAYOUT --- */
+.layout-container {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+/* --- SIDEBAR --- */
+.sidebar {
+    width: 250px;
+    background: linear-gradient(180deg, #0E0500, #1C0A08);
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid var(--gold-dim);
+    flex-shrink: 0;
+}
+
+/* PROFILE */
+.user-profile {
+    background: rgba(212,160,23,0.05);
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    border-bottom: 1px solid var(--gold-dim);
+}
+
+.avatar {
+    width: 50px;
+    height: 50px;
+    background: #0E0500;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--burnished-gold);
+    font-size: 24px;
+    border: 2px solid var(--burnished-gold);
+    flex-shrink: 0;
+}
+
+.user-profile h2 {
+    color: var(--warm-champagne);
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+/* BALANCE */
+.balance-section {
+    padding: 20px;
+    border-bottom: 1px solid var(--gold-dim);
+}
+
+.balance-label {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    display: block;
+    margin-bottom: 6px;
+}
+
+.balance-amount {
+    color: var(--burnished-gold);
+    font-size: 1.6rem;
+    font-weight: bold;
+    text-align: center;
+    display: block;
+}
+
+/* BUTTONS */
+.sidebar-actions {
+    padding: 20px;
+}
+
+.btn-deposit {
+    width: 100%;
+    background: linear-gradient(45deg, #C0152A, #e0294a);
+    color: var(--warm-champagne);
+    border: none;
+    padding: 13px;
+    font-weight: bold;
+    font-size: 0.85rem;
+    letter-spacing: 1.5px;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: 0.3s;
+}
+
+.btn-deposit:hover {
+    box-shadow: 0 0 16px rgba(192,21,42,0.6);
+    transform: scale(1.04);
+}
+
+.btn-logout {
+    width: 100%;
+    background: rgba(192,21,42,0.1);
+    border: none;
+    border-top: 1px solid rgba(192,21,42,0.3);
+    color: #e04050;
+    padding: 16px;
+    font-weight: bold;
+    font-size: 0.85rem;
+    letter-spacing: 1.5px;
+    cursor: pointer;
+    margin-top: auto;
+    transition: 0.3s;
+}
+
+.btn-logout:hover {
+    background: rgba(192,21,42,0.25);
+    box-shadow: 0 0 12px rgba(192,21,42,0.3);
+}
+
+/* --- MAIN --- */
+.main-content {
+    flex: 1;
+    padding: 36px 40px;
+    overflow-y: auto;
+}
+
+.main-content::-webkit-scrollbar { width: 4px; }
+.main-content::-webkit-scrollbar-track { background: transparent; }
+.main-content::-webkit-scrollbar-thumb { background: rgba(212,160,23,0.3); border-radius: 4px; }
+
+/* --- BANNER --- */
+.banner {
+    width: 100%;
+    height: 200px;
+    border-radius: 14px;
+    border: 1px solid var(--burnished-gold);
+    box-shadow: 0 0 22px var(--gold-glow);
+    margin-bottom: 40px;
+    overflow: hidden;
+}
+
+.banner img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+    display: block;
+    transition: transform 0.4s ease;
+}
+
+.banner:hover img {
+    transform: scale(1.03);
+}
+
+/* --- GAMES SECTION --- */
+.games-section h3 {
+    font-size: 2rem;
+    letter-spacing: 3px;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+}
+
+/* GRID */
+.games-grid {
+    display: flex;
+    gap: 18px;
+    flex-wrap: wrap;
+}
+
+/* --- GAME CARD --- */
+.game-card {
+    width: 300px;
+    height: 300px;
+    border-radius: 12px;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--gold-dim);
+    cursor: pointer;
+    text-decoration: none;
+    display: block;
+    background: #1C0A08;
+    transition: border-color 0.25s, transform 0.25s;
+}
+
+.game-card:hover {
+    border-color: var(--burnished-gold);
+    transform: translateY(-6px) scale(1.04);
+}
+
+/* Full-cover image */
+.game-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.35s ease;
+}
+
+.game-card:hover img {
+    transform: scale(1.08);
+}
+
+/* HOVER OVERLAY */
+.game-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(14,5,0,0.82);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+}
+
+.game-card:hover .game-overlay {
+    opacity: 1;
+}
+
+.overlay-title {
+    color: var(--burnished-gold);
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-align: center;
+    padding: 0 14px;
+}
+
+.overlay-play {
+    background: var(--imperial-red);
+    color: var(--warm-champagne);
+    font-size: 0.68rem;
+    font-weight: bold;
+    letter-spacing: 2px;
+    padding: 7px 20px;
+    border-radius: 20px;
+    border: 1px solid rgba(212,160,23,0.25);
+}
+
+/* GOLD BAR at bottom on hover */
+.game-card-bar {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, var(--burnished-gold), transparent);
+    opacity: 0;
+    transition: opacity 0.25s;
+}
+
+.game-card:hover .game-card-bar {
+    opacity: 1;
+}
+
+/* HELP ICON */
+.help-icon {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    border: 1px solid rgba(212,160,23,0.5);
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    font-size: 11px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--burnished-gold);
+    background: rgba(14,5,0,0.6);
+    z-index: 2;
+}
+
+/* COMING SOON */
+.coming-soon {
+    opacity: 0.4;
+    border: 1px dashed rgba(212,160,23,0.25) !important;
+    cursor: default;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.coming-soon:hover {
+    transform: none !important;
+    border-color: rgba(212,160,23,0.25) !important;
+}
+
+.coming-soon p {
+    color: rgba(245,223,160,0.45);
+    font-size: 0.9rem;
+    letter-spacing: 1.5px;
+    text-align: center;
+    line-height: 1.7;
+}
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>CASINO NI LADY</h1>
+    </header>
+
+    <div class="layout-container">
+        <aside class="sidebar">
+            <div class="user-profile">
+                <div class="avatar">👤</div>
+                <h2><?php echo htmlspecialchars($_SESSION['username'] ?? 'Kpop Idol'); ?></h2>
+            </div>
+
+            <div class="balance-section">
+                <span class="balance-label">Balance</span>
+                <span class="balance-amount">₱<?php echo htmlspecialchars($_SESSION['balance'] ?? '9999999999'); ?></span>
+            </div>
+
+            <div class="sidebar-actions">
+                <button class="btn-deposit" onclick="location.href='topup.php'">DEPOSIT</button>
+            </div>
+
+            <button class="btn-logout" onclick="location.href='logout.php'">LOG OUT</button>
+        </aside>
+
+        <main class="main-content">
+
+            <div class="banner">
+                <img src="banner1.png" alt="Endorser">
+            </div>
+
+            <div class="games-section">
+                <h3>POPULAR GAMES</h3>
+                <div class="games-grid">
+
+                    <a href="random.php" class="game-card">
+                        <span class="help-icon">?</span>
+                        <img src="rnggame.jpg" alt="Random Number">
+                        <div class="game-overlay">
+                            <span class="overlay-title">Random Number</span>
+                            <span class="overlay-play">PLAY NOW</span>
+                        </div>
+                        <div class="game-card-bar"></div>
+                    </a>
+
+                    <a href="dice.php" class="game-card">
+                        <span class="help-icon">?</span>
+                        <img src="dicegame1.png" alt="Dice Game">
+                        <div class="game-overlay">
+                            <span class="overlay-title">Dice Game</span>
+                            <span class="overlay-play">PLAY NOW</span>
+                        </div>
+                        <div class="game-card-bar"></div>
+                    </a>
+
+                    <a href="inbetween.php" class="game-card">
+                        <span class="help-icon">?</span>
+                        <img src="colorgame1.png" alt="Color Game">
+                        <div class="game-overlay">
+                            <span class="overlay-title">Color Game</span>
+                            <span class="overlay-play">PLAY NOW</span>
+                        </div>
+                        <div class="game-card-bar"></div>
+                    </a>
+
+                    <div class="game-card coming-soon">
+                        <p>COMING<br>SOON</p>
+                    </div>
+
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+</body>
+</html>
