@@ -211,7 +211,7 @@ if ($hasPending) {
     ];
     $resendCount = $_SESSION['pending_resend_count'] ?? 0;
     $resendRemaining = max(0, 3 - $resendCount);
-    $pendingCode = $_SESSION['pending_code']; // store for possible display
+    $pendingCode = $_SESSION['pending_code']; // store for alert
 }
 ?>
 <!DOCTYPE html>
@@ -233,6 +233,33 @@ if ($hasPending) {
         .cancel-btn { background-color: #6c757d; color: white; text-decoration: none; border-radius: 4px; padding: 8px 15px; }
         .back-btn { margin-top: 20px; }
     </style>
+    <script>
+        // Show alert with verification code when the page loads (only if pending)
+        window.addEventListener('DOMContentLoaded', function() {
+            <?php if ($hasPending && $pendingCode): ?>
+                alert("Your verification code is: <?php echo $pendingCode; ?>");
+            <?php endif; ?>
+        });
+
+        // Set amount step to 100 and max for deposit
+        function setAmountStepAndMax() {
+            const depositRadio = document.querySelector('input[name="action"][value="deposit"]');
+            const amountInput = document.querySelector('input[name="amount"]');
+            if (depositRadio && depositRadio.checked) {
+                amountInput.max = 1000000;
+            } else {
+                amountInput.removeAttribute('max');
+            }
+        }
+        
+        window.addEventListener('DOMContentLoaded', function() {
+            const radios = document.querySelectorAll('input[name="action"]');
+            radios.forEach(radio => {
+                radio.addEventListener('change', setAmountStepAndMax);
+            });
+            setAmountStepAndMax();
+        });
+    </script>
 </head>
 <body>
     <div class="container">
