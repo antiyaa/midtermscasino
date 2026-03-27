@@ -1,0 +1,515 @@
+<?php
+session_start();
+if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
+    header('Location: index.php');
+    exit;
+}
+
+if (!isset($_SESSION['dice_bet']))          $_SESSION['dice_bet']          = null;
+if (!isset($_SESSION['dice_active']))       $_SESSION['dice_active']       = false;
+if (!isset($_SESSION['dice_current_bet']))  $_SESSION['dice_current_bet']  = 10;
+if (!isset($_SESSION['dice_bet_type']))     $_SESSION['dice_bet_type']     = 'low';
+if (!isset($_SESSION['dice_specific_num'])) $_SESSION['dice_specific_num'] = 7;
+if (!isset($_SESSION['dice_history']))      $_SESSION['dice_history']      = [];
+
+$message          = '';
+$player_dice1     = null;
+$player_dice2     = null;
+$player_sum       = null;
+$show_win_banner  = false;
+$show_loss_banner = false;
+
+$action = $_POST['action'] ?? $_GET['action'] ?? '';
+
+if ($action === 'back') {
+    unset($_SESSION['dice_bet'], $_SESSION['dice_bet_type'], $_SESSION['dice_specific_num']);
+    $_SESSION['dice_active'] = false;
+    header('Location: Homepage.php');
+    exit;
+}
+
+if ($action === 'stop') {
+    unset($_SESSION['dice_bet'], $_SESSION['dice_bet_type'], $_SESSION['dice_specific_num']);
+    $_SESSION['dice_active'] = false;
+    $message = "Game stopped. You can place a new bet.";
+}
+
+// ---------- ADJUST BET (with MAX button) ----------
+if ($action === 'adjust' && !$_SESSION['dice_active']) {
+    $adjust = $_POST['adjust'] ?? '';
+    $current = $_SESSION['dice_current_bet'];
+    switch ($adjust) {
+        case '-100': $new = $current - 100; break;
+        case '-10':  $new = $current - 10;  break;
+        case '+10':  $new = $current + 10;  break;
+        case '+100': $new = $current + 100; break;
+        case 'max':  $new = 5000;           break;
+        default:     $new = $current;
+    }
+    $new = max(10, min(5000, $new));
+    $_SESSION['dice_current_bet'] = $new;
+}
+
+// ---------- UPDATE BET TYPE (while not active) ----------
+if ($action === 'set_type' && !$_SESSION['dice_active']) {
+    $type = $_POST['bet_type'] ?? 'low';
+    if (in_array($type, ['low', 'mid', 'high', 'specific'])) {
+        $_SESSION['dice_bet_type'] = $type;
+    }
+    if ($type === 'specific' && isset($_POST['specific_num'])) {
+        $num = (int)$_POST['specific_num'];
+        if ($num >= 2 && $num <= 12) {
+            $_SESSION['dice_specific_num'] = $num;
+        }
+    }
+}
+
+// ---------- CONFIRM BET ----------
+if ($action === 'confirm_bet' && !$_SESSION['dice_active']) {
+    $bet = $_SESSION['dice_current_bet'];
+    if ($bet <= 0) {
+        $message = "Bet must be positive.";
+    } elseif ($bet > $_SESSION['balance']) {
+        $message = "Insufficient balance. Your balance is {$_SESSION['balance']}.";
+    } else {
+        $_SESSION['dice_bet'] = $bet;
+        $_SESSION['dice_active'] = true;
+        $message = "Bet confirmed: ₱$bet (" . ucfirst($_SESSION['dice_bet_type']) .
+                   ($_SESSION['dice_bet_type'] === 'specific' ? " {$_SESSION['dice_specific_num']}" : "") .
+                   "). Click Roll Dice to play.";
+    }
+}
+
+// Helper: get multiplier for a given bet type and sum
+function getMultiplier($bet_type, $sum, $specific_num) {
+    switch ($bet_type) {
+        case 'low':  return ($sum >= 2 && $sum <= 5) ? 2 : 0;
+        case 'mid':  return ($sum >= 6 && $sum <= 8) ? 2.5 : 0;
+        case 'high': return ($sum >= 9 && $sum <= 12) ? 2 : 0;
+        case 'specific': return ($sum == $specific_num) ? 5 : 0;
+        default: return 0;
+    }
+}
+
+// Helper: get a readable name for bet type
+function getBetTypeName($bet_type, $specific_num) {
+    switch ($bet_type) {
+        case 'low':  return 'Low (2‑5)';
+        case 'mid':  return 'Mid (6‑8)';
+        case 'high': return 'High (9‑12)';
+        case 'specific': return "Specific $specific_num";
+        default: return 'Unknown';
+    }
+}
+
+// ---------- ROLL ----------
+if ($action === 'roll' && $_SESSION['dice_active']) {
+    $bet = $_SESSION['dice_bet'];
+    if ($bet > $_SESSION['balance']) {
+        $message = "Insufficient balance to continue. Please stop and try again with a lower bet.";
+    } else {
+        $player_dice1 = rand(1, 6);
+        $player_dice2 = rand(1, 6);
+        $player_sum   = $player_dice1 + $player_dice2;
+
+        $bet_type = $_SESSION['dice_bet_type'];
+        $specific = $_SESSION['dice_specific_num'];
+        $multiplier = getMultiplier($bet_type, $player_sum, $specific);
+
+        $_SESSION['balance'] -= $bet;
+
+        if ($multiplier > 0) {
+            $win_amount = $bet * $multiplier;
+            $_SESSION['balance'] += $win_amount;
+            $profit = $win_amount - $bet;
+            $message = "You rolled $player_sum! You won! +₱" . number_format($profit) . " profit. New balance: ₱" . number_format($_SESSION['balance']) . ".";
+            $show_win_banner = true;
+            $result_text = "WIN";
+        } else {
+            $message = "You rolled $player_sum. You lose. Lost ₱$bet. New balance: ₱" . number_format($_SESSION['balance']) . ".";
+            $show_loss_banner = true;
+            $profit = -$bet;
+            $result_text = "LOSS";
+        }
+
+        // Add to history
+        $history_entry = [
+            'time'    => date('H:i:s'),
+            'pattern' => getBetTypeName($bet_type, $specific),
+            'bet'     => $bet,
+            'sum'     => $player_sum,
+            'result'  => $result_text,
+            'profit'  => $profit,
+        ];
+        array_unshift($_SESSION['dice_history'], $history_entry);
+        if (count($_SESSION['dice_history']) > 20) {
+            array_pop($_SESSION['dice_history']);
+        }
+    }
+}
+
+function getDiceImage($value) {
+    if ($value === null) return "d1.png";
+    return "d$value.png";
+}
+
+$balance_display = number_format($_SESSION['balance']);
+$current_bet_display = number_format($_SESSION['dice_current_bet']);
+
+// For potential win display
+$temp_multiplier = 0;
+if ($_SESSION['dice_bet_type'] === 'low') $temp_multiplier = 2;
+elseif ($_SESSION['dice_bet_type'] === 'mid') $temp_multiplier = 2.5;
+elseif ($_SESSION['dice_bet_type'] === 'high') $temp_multiplier = 2;
+elseif ($_SESSION['dice_bet_type'] === 'specific') $temp_multiplier = 5;
+$potential_win = $_SESSION['dice_current_bet'] * $temp_multiplier;
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Casino Ni Lady – Dice Game</title>
+    <style>
+        /* Your existing CSS – keep as is */
+        .bet-type-group {
+            margin: 15px 0;
+            text-align: center;
+        }
+        .bet-type-group label {
+            margin: 0 8px;
+            display: inline-block;
+        }
+        .specific-number-select {
+            margin-top: 10px;
+            text-align: center;
+        }
+        .specific-number-select select {
+            padding: 5px 10px;
+            font-size: 1rem;
+        }
+        /* Style for disabled controls (optional) */
+        .disabled-controls {
+            opacity: 0.7;
+        }
+        /* History panel styles */
+        .history-panel {
+            margin-top: 20px;
+            background: #1e1e2f;
+            border-radius: 12px;
+            padding: 15px;
+        }
+        .history-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .history-item {
+            display: flex;
+            gap: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid #333;
+            font-size: 0.85rem;
+            align-items: center;
+        }
+        .history-time {
+            color: #aaa;
+            width: 60px;
+        }
+        .history-pattern {
+            width: 100px;
+            font-weight: bold;
+        }
+        .history-bet {
+            width: 60px;
+            text-align: right;
+        }
+        .history-sum {
+            width: 40px;
+            text-align: center;
+        }
+        .history-result {
+            width: 50px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .history-win {
+            color: #4ade80;
+        }
+        .history-loss {
+            color: #f87171;
+        }
+        .history-profit {
+            width: 70px;
+            text-align: right;
+        }
+        .profit-positive {
+            color: #4ade80;
+        }
+        .profit-negative {
+            color: #f87171;
+        }
+        .history-empty {
+            text-align: center;
+            color: #aaa;
+            padding: 20px;
+        }
+
+        /* ---------- Dice Shake Animation ---------- */
+        @keyframes shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            30% { transform: translate(3px, 2px) rotate(0deg); }
+            40% { transform: translate(1px, -1px) rotate(1deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            60% { transform: translate(-3px, 1px) rotate(0deg); }
+            70% { transform: translate(3px, 1px) rotate(-1deg); }
+            80% { transform: translate(-1px, -1px) rotate(1deg); }
+            90% { transform: translate(1px, 2px) rotate(0deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
+        }
+        .shake {
+            animation: shake 0.5s ease-in-out;
+        }
+    </style>
+</head>
+<body>
+
+    <input type="checkbox" id="helpToggle" class="help-toggle">
+
+    <div class="modal-overlay">
+        <div class="modal-box">
+            <label for="helpToggle" class="modal-close" title="Close">✕</label>
+            <div class="modal-title">HOW TO PLAY</div>
+            <div class="modal-subtitle">Rules &amp; Guidelines — Dice Game</div>
+            <hr class="modal-divider">
+            <div class="rule-section">
+                <div class="rule-section-title">BETTING OPTIONS</div>
+                <ul class="rule-list">
+                    <li><strong>Low (2‑5)</strong> – Win if total is 2, 3, 4, or 5. Payout: <strong>2×</strong> your bet.</li>
+                    <li><strong>Mid (6‑8)</strong> – Win if total is 6, 7, or 8. Payout: <strong>2.5×</strong> your bet.</li>
+                    <li><strong>High (9‑12)</strong> – Win if total is 9, 10, 11, or 12. Payout: <strong>2×</strong> your bet.</li>
+                    <li><strong>Specific Number (2‑12)</strong> – Pick a number. Win if the total matches exactly. Payout: <strong>5×</strong> your bet.</li>
+                </ul>
+            </div>
+            <hr class="modal-divider">
+            <div class="rule-section">
+                <div class="rule-section-title">HOW TO PLAY</div>
+                <ul class="rule-list">
+                    <li><strong>Step 1 — Set Bet Amount:</strong> Use +/‑ buttons (min ₱10 / max ₱5,000).</li>
+                    <li><strong>Step 2 — Choose Bet Type:</strong> Select Low, Mid, High, or Specific Number (and pick a number).</li>
+                    <li><strong>Step 3 — Confirm Bet:</strong> Click <em>CONFIRM BET</em> to lock your wager.</li>
+                    <li><strong>Step 4 — Roll:</strong> Press <em>ROLL THE DICE</em>. The result determines if you win.</li>
+                    <li><strong>After Each Round:</strong> Roll again (same bet) or click <em>END THE GAME / CHANGE BET</em> to start over.</li>
+                </ul>
+            </div>
+            <div class="modal-note">
+                ⚠ &nbsp;Please gamble responsibly. Results are random and cannot be influenced.
+            </div>
+        </div>
+    </div>
+
+    <header>
+        <div class="header-left">
+            <img src="logo.png" alt="Casino Ni Lady Logo" class="header-logo">
+            <h1>AURUM</h1>
+        </div>
+        <div class="header-right">
+            <div class="header-divider"></div>
+            <div class="header-balance">
+                <span class="balance-label">Your Balance</span>
+                <span class="balance-amount">₱<?php echo htmlspecialchars($balance_display); ?></span>
+            </div>
+            <button class="btn-deposit" onclick="location.href='topup.php'">+ TOP UP</button>
+        </div>
+    </header>
+
+    <div class="back-container">
+        <form method="post" style="display:inline;">
+            <input type="hidden" name="action" value="back">
+            <button type="submit" class="back-btn">&#8592; Back to Homepage</button>
+        </form>
+    </div>
+
+    <div class="game-wrapper">
+        <div class="game-title">DICE GAME &nbsp;&#8212;&nbsp; CHOOSE YOUR BET</div>
+
+        <div class="columns">
+            <div class="col-left">
+                <div class="panel">
+                    <label for="helpToggle" class="help-icon" title="Rules &amp; Help">?</label>
+
+                    <?php if ($_SESSION['dice_active']): ?>
+                        <!-- Info pills when game is active -->
+                        <div class="panel-title">CURRENT BET</div>
+                        <div class="info-pills">
+                            <div class="info-pill">
+                                <span class="pill-label">BALANCE</span>
+                                <span class="pill-value">₱<?php echo number_format($_SESSION['balance']); ?></span>
+                            </div>
+                            <div class="info-pill">
+                                <span class="pill-label">YOUR BET</span>
+                                <span class="pill-value">₱<?php echo number_format($_SESSION['dice_bet']); ?></span>
+                            </div>
+                            <div class="info-pill">
+                                <span class="pill-label">BET TYPE</span>
+                                <span class="pill-value"><?php echo ucfirst($_SESSION['dice_bet_type']) . ($_SESSION['dice_bet_type'] == 'specific' ? ' ' . $_SESSION['dice_specific_num'] : ''); ?></span>
+                            </div>
+                            <div class="info-pill">
+                                <span class="pill-label">POTENTIAL WIN</span>
+                                <span class="pill-value">₱<?php echo number_format($_SESSION['dice_bet'] * $temp_multiplier); ?></span>
+                            </div>
+                        </div>
+                        <p class="active-note">Game in progress — roll or end below.</p>
+                    <?php endif; ?>
+
+                    <!-- Bet amount adjustment (always visible, disabled when active) -->
+                    <div class="bet-balance-row">
+                        <span class="bal-label">YOUR BALANCE</span>
+                        <span class="bal-value">₱<?php echo number_format($_SESSION['balance']); ?></span>
+                    </div>
+                    <form method="post">
+                        <div class="bet-input-wrap">
+                            <input type="text" class="bet-number-input" value="₱<?php echo $current_bet_display; ?>" readonly>
+                        </div>
+                        <div class="adjust-buttons">
+                            <button type="submit" name="adjust" value="-100" class="adjust-btn" <?php echo $_SESSION['dice_active'] ? 'disabled' : ''; ?>>-100</button>
+                            <button type="submit" name="adjust" value="-10"  class="adjust-btn" <?php echo $_SESSION['dice_active'] ? 'disabled' : ''; ?>>-10</button>
+                            <button type="submit" name="adjust" value="max"   class="adjust-btn" <?php echo $_SESSION['dice_active'] ? 'disabled' : ''; ?>>MAX</button>
+                            <button type="submit" name="adjust" value="+10"  class="adjust-btn" <?php echo $_SESSION['dice_active'] ? 'disabled' : ''; ?>>+10</button>
+                            <button type="submit" name="adjust" value="+100" class="adjust-btn" <?php echo $_SESSION['dice_active'] ? 'disabled' : ''; ?>>+100</button>
+                        </div>
+                        <input type="hidden" name="action" value="adjust">
+                    </form>
+                    <div class="minmax-row">
+                        <span>MIN: 10</span><span>MAX: 5000</span>
+                    </div>
+
+                    <div class="gold-sep"></div>
+
+                    <!-- Bet Type Selection with Radio Buttons (always visible, disabled when active) -->
+                    <form method="post" id="betTypeForm">
+                        <div class="bet-type-group">
+                            <label><input type="radio" name="bet_type" value="low" <?php echo ($_SESSION['dice_bet_type'] ?? 'low') == 'low' ? 'checked' : ''; ?> <?php echo $_SESSION['dice_active'] ? 'disabled' : ''; ?> onchange="this.form.submit()"> Low (2‑5) ×2</label>
+                            <label><input type="radio" name="bet_type" value="mid" <?php echo ($_SESSION['dice_bet_type'] ?? 'low') == 'mid' ? 'checked' : ''; ?> <?php echo $_SESSION['dice_active'] ? 'disabled' : ''; ?> onchange="this.form.submit()"> Mid (6‑8) ×2.5</label>
+                            <label><input type="radio" name="bet_type" value="high" <?php echo ($_SESSION['dice_bet_type'] ?? 'low') == 'high' ? 'checked' : ''; ?> <?php echo $_SESSION['dice_active'] ? 'disabled' : ''; ?> onchange="this.form.submit()"> High (9‑12) ×2</label>
+                            <label><input type="radio" name="bet_type" value="specific" <?php echo ($_SESSION['dice_bet_type'] ?? 'low') == 'specific' ? 'checked' : ''; ?> <?php echo $_SESSION['dice_active'] ? 'disabled' : ''; ?> onchange="this.form.submit()"> Specific Number ×5</label>
+                        </div>
+                        <?php if (($_SESSION['dice_bet_type'] ?? 'low') == 'specific'): ?>
+                        <div class="specific-number-select">
+                            <select name="specific_num" <?php echo $_SESSION['dice_active'] ? 'disabled' : ''; ?> onchange="this.form.submit()">
+                                <?php for ($i = 2; $i <= 12; $i++): ?>
+                                    <option value="<?php echo $i; ?>" <?php echo ($_SESSION['dice_specific_num'] ?? 7) == $i ? 'selected' : ''; ?>><?php echo $i; ?></option>
+                                <?php endfor; ?>
+                            </select>
+                        </div>
+                        <?php endif; ?>
+                        <input type="hidden" name="action" value="set_type">
+                    </form>
+
+                    <div class="gold-sep"></div>
+
+                    <!-- CONFIRM BET button (only visible when game not active) -->
+                    <?php if (!$_SESSION['dice_active']): ?>
+                    <form method="post">
+                        <input type="hidden" name="action" value="confirm_bet">
+                        <button type="submit" class="btn-confirm">CONFIRM BET</button>
+                    </form>
+                    <?php endif; ?>
+
+                </div>
+
+                <!-- HISTORY PANEL -->
+                <div class="history-panel">
+                    <div class="panel-title">GAME HISTORY</div>
+                    <div class="history-list">
+                        <?php if (empty($_SESSION['dice_history'])): ?>
+                            <div class="history-empty">No games played yet.</div>
+                        <?php else: ?>
+                            <?php foreach ($_SESSION['dice_history'] as $entry): ?>
+                                <div class="history-item">
+                                    <span class="history-time"><?php echo htmlspecialchars($entry['time']); ?></span>
+                                    <span class="history-pattern"><?php echo htmlspecialchars($entry['pattern']); ?></span>
+                                    <span class="history-bet">₱<?php echo number_format($entry['bet']); ?></span>
+                                    <span class="history-sum"><?php echo $entry['sum']; ?></span>
+                                    <span class="history-result <?php echo $entry['result'] == 'WIN' ? 'history-win' : 'history-loss'; ?>">
+                                        <?php echo $entry['result']; ?>
+                                    </span>
+                                    <span class="history-profit <?php echo $entry['profit'] >= 0 ? 'profit-positive' : 'profit-negative'; ?>">
+                                        <?php echo ($entry['profit'] >= 0 ? '+' : '') . number_format($entry['profit']); ?>
+                                    </span>
+                                </div>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </div>
+                </div>
+
+            </div>
+            <div class="col-right">
+                <div class="result-panel">
+                    <div class="panel-title">GAME RESULT</div>
+
+                    <?php if ($show_win_banner): ?>
+                        <div class="banner win-banner">YOU WIN!</div>
+                    <?php elseif ($show_loss_banner): ?>
+                        <div class="banner loss-banner">YOU LOSE</div>
+                    <?php endif; ?>
+
+                    <div class="dice-arena">
+                        <div class="dice-side <?php
+                            if ($show_win_banner)  echo 'winner';
+                            elseif ($show_loss_banner) echo 'loser';
+                        ?>">
+                            <span class="side-label you">&#9654; YOU</span>
+                            <div class="dice-pair">
+                                <div class="die-wrap">
+                                    <img src="<?php echo getDiceImage($player_dice1); ?>" alt="Die" class="dice-icon">
+                                </div>
+                                <div class="die-wrap">
+                                    <img src="<?php echo getDiceImage($player_dice2); ?>" alt="Die" class="dice-icon">
+                                </div>
+                            </div>
+                            <div class="score-badge">
+                                TOTAL <strong><?php echo $player_sum !== null ? $player_sum : '?'; ?></strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="result-indicator">
+                        <?php echo $message ? htmlspecialchars($message) : "Awaiting action — confirm your bet and roll the dice."; ?>
+                    </div>
+
+                    <?php if ($_SESSION['dice_active']): ?>
+                    <div class="action-buttons">
+                        <form method="post" style="display:inline;" id="rollForm">
+                            <input type="hidden" name="action" value="roll">
+                            <button type="submit" class="btn-roll">ROLL THE DICE</button>
+                        </form>
+                        <form method="post" style="display:inline;">
+                            <input type="hidden" name="action" value="stop">
+                            <button type="submit" class="btn-secondary">END THE GAME / CHANGE BET</button>
+                        </form>
+                    </div>
+                    <?php endif; ?>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Dice shake animation on roll
+        document.getElementById('rollForm')?.addEventListener('submit', function(e) {
+            e.preventDefault(); // prevent immediate submission
+            var diceImages = document.querySelectorAll('.die-wrap img');
+            diceImages.forEach(function(img) {
+                img.classList.add('shake');
+            });
+            // After animation ends (0.5s), submit the form
+            setTimeout(function() {
+                document.getElementById('rollForm').submit();
+            }, 500);
+        });
+    </script>
+</body>
+</html>
