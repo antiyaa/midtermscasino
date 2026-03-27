@@ -34,19 +34,21 @@ if ($action === 'stop') {
     $message = "Game stopped. You can place a new bet.";
 }
 
-// ---------- ADJUST BET (with MAX button) ----------
 if ($action === 'adjust' && !$_SESSION['dice_active']) {
     $adjust = $_POST['adjust'] ?? '';
     $current = $_SESSION['dice_current_bet'];
     switch ($adjust) {
         case '-100': $new = $current - 100; break;
         case '-10':  $new = $current - 10;  break;
+        case '10':   $new = 10;             break;
         case '+10':  $new = $current + 10;  break;
         case '+100': $new = $current + 100; break;
-        case 'max':  $new = 5000;           break;
+        case 'all_in':
+            $new = $_SESSION['balance'];   // sets bet to full balance (no cap)
+            break;
         default:     $new = $current;
     }
-    $new = max(10, min(5000, $new));
+    // No min/max enforcement – allow any numeric value
     $_SESSION['dice_current_bet'] = $new;
 }
 
@@ -296,7 +298,7 @@ $potential_win = $_SESSION['dice_current_bet'] * $temp_multiplier;
             <div class="rule-section">
                 <div class="rule-section-title">HOW TO PLAY</div>
                 <ul class="rule-list">
-                    <li><strong>Step 1 — Set Bet Amount:</strong> Use +/‑ buttons (min ₱10 / max ₱5,000).</li>
+                    <li><strong>Step 1 — Set Bet Amount:</strong> Use the buttons to adjust your wager (min ₱10). The <strong>All In</strong> button sets your bet to your current balance (up to ₱5,000).</li>
                     <li><strong>Step 2 — Choose Bet Type:</strong> Select Low, Mid, High, or Specific Number (and pick a number).</li>
                     <li><strong>Step 3 — Confirm Bet:</strong> Click <em>CONFIRM BET</em> to lock your wager.</li>
                     <li><strong>Step 4 — Roll:</strong> Press <em>ROLL THE DICE</em>. The result determines if you win.</li>
@@ -375,14 +377,15 @@ $potential_win = $_SESSION['dice_current_bet'] * $temp_multiplier;
                         <div class="adjust-buttons">
                             <button type="submit" name="adjust" value="-100" class="adjust-btn" <?php echo $_SESSION['dice_active'] ? 'disabled' : ''; ?>>-100</button>
                             <button type="submit" name="adjust" value="-10"  class="adjust-btn" <?php echo $_SESSION['dice_active'] ? 'disabled' : ''; ?>>-10</button>
-                            <button type="submit" name="adjust" value="max"   class="adjust-btn" <?php echo $_SESSION['dice_active'] ? 'disabled' : ''; ?>>MAX</button>
+                            <button type="submit" name="adjust" value="10"   class="adjust-btn" <?php echo $_SESSION['dice_active'] ? 'disabled' : ''; ?>>10</button>
                             <button type="submit" name="adjust" value="+10"  class="adjust-btn" <?php echo $_SESSION['dice_active'] ? 'disabled' : ''; ?>>+10</button>
                             <button type="submit" name="adjust" value="+100" class="adjust-btn" <?php echo $_SESSION['dice_active'] ? 'disabled' : ''; ?>>+100</button>
+                            <button type="submit" name="adjust" value="all_in" class="adjust-btn" <?php echo $_SESSION['dice_active'] ? 'disabled' : ''; ?>>All In</button>
                         </div>
                         <input type="hidden" name="action" value="adjust">
                     </form>
                     <div class="minmax-row">
-                        <span>MIN: 10</span><span>MAX: 5000</span>
+                        <span>MIN: 10</span>
                     </div>
 
                     <div class="gold-sep"></div>
