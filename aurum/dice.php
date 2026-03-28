@@ -775,36 +775,50 @@ $potential_win = $_SESSION['dice_current_bet'] * $temp_multiplier;
     <input type="checkbox" id="helpToggle" class="help-toggle">
 
     <div class="modal-overlay">
-        <div class="modal-box">
-            <label for="helpToggle" class="modal-close" title="Close">✕</label>
-            <div class="modal-title">HOW TO PLAY</div>
-            <div class="modal-subtitle">Rules &amp; Guidelines — Dice Game</div>
-            <hr class="modal-divider">
-            <div class="rule-section">
-                <div class="rule-section-title">BETTING OPTIONS</div>
-                <ul class="rule-list">
-                    <li><strong>Low (2‑5)</strong> – Win if total is 2, 3, 4, or 5. Payout: <strong>2×</strong> your bet.</li>
-                    <li><strong>Mid (6‑8)</strong> – Win if total is 6, 7, or 8. Payout: <strong>2.5×</strong> your bet.</li>
-                    <li><strong>High (9‑12)</strong> – Win if total is 9, 10, 11, or 12. Payout: <strong>2×</strong> your bet.</li>
-                    <li><strong>Specific Number (2‑12)</strong> – Pick a number. Win if the total matches exactly. Payout: <strong>5×</strong> your bet.</li>
-                </ul>
-            </div>
-            <hr class="modal-divider">
-            <div class="rule-section">
-                <div class="rule-section-title">HOW TO PLAY</div>
-                <ul class="rule-list">
-                    <li><strong>Step 1 — Pick a Pattern:</strong> Select Low, Mid, High, or Specific Number.</li>
-                    <li><strong>Step 2 — Set Your Bet:</strong> Type an amount or use the +/− buttons. MIN is 1, MAX is your full balance.</li>
-                    <li><strong>Step 3 — Confirm Bet:</strong> Press <em>CONFIRM BET</em> to lock your wager.</li>
-                    <li><strong>Step 4 — Roll:</strong> Press <em>ROLL THE DICE</em>. The result determines if you win.</li>
-                    <li><strong>After Each Round:</strong> Roll again (same bet) or click <em>END THE GAME / CHANGE BET</em> to start over.</li>
-                </ul>
-            </div>
-            <div class="modal-note">
-                ⚠ &nbsp;Please gamble responsibly. Results are random and cannot be influenced.
-            </div>
+    <div class="modal-box">
+        <label for="helpToggle" class="modal-close" title="Close">✕</label>
+        <div class="modal-title">HOW TO PLAY</div>
+        <div class="modal-subtitle">Rules &amp; Guidelines — Color Game (Chip Betting)</div>
+        <hr class="modal-divider">
+        <div class="rule-section">
+            <div class="rule-section-title">OBJECTIVE</div>
+            <ul class="rule-list">
+                <li>Two colored dice are rolled each round.</li>
+                <li>Select a chip value (physical chip style), then click a color to place that bet.</li>
+                <li>You can bet on multiple colors and even stack multiple chips on the same color.</li>
+                <li>Once you're done betting, click "CONFIRM BETS" to lock your bets.</li>
+                <li>After confirmation, click "ROLL DICE" to see the results and collect winnings.</li>
+            </ul>
+        </div>
+        <hr class="modal-divider">
+        <div class="rule-section">
+            <div class="rule-section-title">PAYOUTS</div>
+            <table class="rule-table">
+                <thead> <th>Match Type</th><th>Multiplier</th><th>Example (Bet ₱100)</th> </thead>
+                <tbody>
+                     <tr><td>Exactly one die matches</td><td>2×</td><td>Win ₱200 (₱100 profit)</td></tr>
+                     <tr><td>Both dice match</td><td>4×</td><td>Win ₱400 (₱300 profit)</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <hr class="modal-divider">
+        <div class="rule-section">
+            <div class="rule-section-title">HOW TO PLAY (STEP BY STEP)</div>
+            <ul class="rule-list">
+                <li><strong>Step 1 – Pick a Chip:</strong> Choose one of the chip values (10, 20, 50, 100, 1000, or ALL IN). The selected chip glows and stays active until you choose another.</li>
+                <li><strong>Step 2 – Place a Bet:</strong> Click any color button. The chosen chip amount is instantly deducted from your balance and added to that color's bet total. The color button shows the accumulated bet amount as a badge.</li>
+                <li><strong>Step 3 – Stack More Bets:</strong> You can click the same color repeatedly to add more chips, or click different colors to spread your bets. There is no limit to how many times you can bet on a single color.</li>
+                <li><strong>Step 4 – Review Your Bets:</strong> The left panel displays all your current bets and the total amount wagered. Use the "CLEAR" button to remove all bets and refund your balance.</li>
+                <li><strong>Step 5 – Confirm Bets:</strong> When you are satisfied, press <em>CONFIRM BETS</em>. This locks your bets and switches the interface to a summary view. You can still edit bets by pressing <em>EDIT BETS</em>, which refunds all bets and returns you to the betting phase.</li>
+                <li><strong>Step 6 – Roll the Dice:</strong> After confirmation, click <em>ROLL DICE</em>. The two dice will flash through all colors and land on a random color each. Winnings are calculated automatically based on matches, and your balance is updated.</li>
+                <li><strong>After the Roll:</strong> All bets are cleared and you start a fresh round. The history panel records every round for reference.</li>
+            </ul>
+        </div>
+        <div class="modal-note">
+            ⚠ Please gamble responsibly. Results are random and cannot be predicted.
         </div>
     </div>
+</div>
 
     <header>
         <div class="header-left">

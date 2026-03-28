@@ -532,15 +532,12 @@ $in_step2 = isset($_SESSION['verification_code']);
             <div class="corners"></div>
 
             <div class="card-logo-row">
-                <span class="suit">&#9829;</span>
                 <div class="card-brand">AURUM</div>
-                <span class="suit">&#9830;</span>
             </div>
             <p class="card-tagline">Secure Player Login</p>
             <div class="gold-rule"></div>
 
             <?php if (!$in_step2): ?>
-            <!-- ═══ STEP 1: Phone Number ═══ -->
             <p class="step-label">Step 1 &mdash; Enter your number</p>
 
             <form method="post" autocomplete="off">
@@ -568,7 +565,6 @@ $in_step2 = isset($_SESSION['verification_code']);
             <?php endif; ?>
 
             <?php else: ?>
-            <!-- ═══ STEP 2: Verification Code ═══ -->
             <p class="step-label">Step 2 &mdash; Enter your code</p>
             <p class="step-sub">
                 A code was sent to
@@ -608,13 +604,6 @@ $in_step2 = isset($_SESSION['verification_code']);
 
             <?php endif; ?>
 
-            <div class="card-foot">
-                <div class="pip"></div>
-                <span class="foot-text">Licensed &amp; Secured</span>
-                <div class="pip"></div>
-                <span class="foot-text">18+</span>
-                <div class="pip"></div>
-            </div>
 
         </div>
     </div>

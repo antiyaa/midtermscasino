@@ -168,7 +168,7 @@ $pattern_label = $pattern_labels[$selected_option] ?? '';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Casino Ni Lady – Random Number</title>
     <style>
-        /* ... (all existing styles from the previous version, kept unchanged) ... */
+        /* ... (keep all existing styles unchanged) ... */
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         :root {
@@ -192,6 +192,7 @@ $pattern_label = $pattern_labels[$selected_option] ?? '';
             font-family: var(--sans);
         }
 
+        /* HEADER */
         header {
             background: linear-gradient(90deg, #0E0500, #1C0A08);
             padding: 12px 32px;
@@ -730,7 +731,6 @@ $pattern_label = $pattern_labels[$selected_option] ?? '';
 
     <input type="checkbox" id="helpToggle" class="help-toggle">
 
-    <!-- MODAL (unchanged) -->
     <div class="modal-overlay">
         <div class="modal-box">
             <label for="helpToggle" class="modal-close" title="Close">✕</label>
@@ -861,6 +861,7 @@ $pattern_label = $pattern_labels[$selected_option] ?? '';
                                 <button type="submit" name="adjust" value="-10"  class="adjust-btn"
                                     <?php echo ($current_bet <= 1) ? 'disabled' : ''; ?>>-10</button>
                                 <button type="submit" name="adjust" value="allin" class="adjust-btn allin"
+                                    onclick="return confirm('Are you sure you want to bet ALL IN (₱<?php echo number_format($user_balance); ?>)?')"
                                     <?php echo ($user_balance <= 0) ? 'disabled' : ''; ?>>ALL IN</button>
                                 <button type="submit" name="adjust" value="+10"  class="adjust-btn"
                                     <?php echo ($current_bet >= $user_balance) ? 'disabled' : ''; ?>>+10</button>
@@ -951,10 +952,17 @@ $pattern_label = $pattern_labels[$selected_option] ?? '';
                         ?>
                     </div>
 
+                    <!-- Roll button inside a separate form with hidden inputs -->
                     <div class="action-buttons">
-                        <button type="submit" name="play" form="mainForm" class="btn-roll"
-                            <?php echo ($has_confirmed_bet && $selected_option) ? '' : 'disabled'; ?>
-                            id="rollButton">START THE DRAW</button>
+                        <form method="post" id="rollForm">
+                            <input type="hidden" name="play" value="1">
+                            <?php if ($has_confirmed_bet): ?>
+                                <input type="hidden" name="option" value="<?php echo htmlspecialchars($selected_option); ?>">
+                            <?php endif; ?>
+                            <button type="submit" class="btn-roll"
+                                <?php echo ($has_confirmed_bet && $selected_option) ? '' : 'disabled'; ?>
+                                id="rollButton">START THE DRAW</button>
+                        </form>
                     </div>
                 </div>
             </div><!-- /col-center -->
@@ -1014,7 +1022,7 @@ $pattern_label = $pattern_labels[$selected_option] ?? '';
         // Number animation on "START THE DRAW"
         const rollButton = document.getElementById('rollButton');
         const numberCircle = document.querySelector('.number-circle');
-        const mainForm = document.getElementById('mainForm');
+        const rollForm = document.getElementById('rollForm');
 
         if (rollButton && !rollButton.disabled) {
             rollButton.addEventListener('click', function(e) {
@@ -1033,20 +1041,16 @@ $pattern_label = $pattern_labels[$selected_option] ?? '';
                     const elapsed = Date.now() - startTime;
                     if (elapsed >= duration) {
                         clearInterval(interval);
-                        // restore button and submit form
-                        rollButton.disabled = false;
-                        rollButton.innerText = originalText;
-                        mainForm.submit();
+                        // Submit the rollForm
+                        rollForm.submit();
                         return;
                     }
-                    // generate a random number between 1 and 30
                     const randomNum = Math.floor(Math.random() * 30) + 1;
                     numberCircle.innerText = randomNum;
                 }
 
-                // start animation
                 interval = setInterval(updateNumber, 50);
-                updateNumber(); // first change immediately
+                updateNumber();
             });
         }
     </script>

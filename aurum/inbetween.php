@@ -164,13 +164,6 @@ $bets = $_SESSION['bets'];
 $total_bets = array_sum($bets);
 $bets_confirmed = $_SESSION['bets_confirmed'];
 $selected_chip = $_POST['chip_amount'] ?? ($_GET['chip'] ?? '');
-
-$potential_win_summary = [];
-if ($bets_confirmed) {
-    foreach ($bets as $color => $amount) {
-        $potential_win_summary[$color] = ['one' => $amount * 2, 'two' => $amount * 4];
-    }
-}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -236,49 +229,25 @@ if ($bets_confirmed) {
             letter-spacing: 1px; text-shadow: 0 0 8px rgba(212,160,23,0.4);
         }
         .btn-deposit {
-            background: linear-gradient(45deg, #C0152A, #e0294a);
-            color: var(--warm-champagne); border: none; padding: 11px 22px;
-            font-weight: bold; font-size: 0.82rem; letter-spacing: 1.5px;
-            cursor: pointer; border-radius: 8px; transition: 0.3s;
-            white-space: nowrap; font-family: var(--sans);
+            background: linear-gradient(45deg, #1C0A08, #2a100a);
+            color: var(--warm-champagne); border: 1px solid rgba(212,160,23,0.35);
+            padding: 11px 22px; font-weight: 600; font-size: 0.78rem;
+            letter-spacing: 1.5px; cursor: pointer; border-radius: 2px;
+            transition: 0.3s; white-space: nowrap; font-family: var(--sans);
+            text-decoration: none; display: inline-block;
         }
         .btn-deposit:hover { box-shadow: 0 0 18px rgba(192,21,42,0.65); transform: scale(1.04); }
 
-        /* ── SUB-HEADER BAR ── */
-        .sub-header {
-            background: rgba(14,5,0,0.6);
-            border-bottom: 1px solid var(--gold-dim);
-            padding: 10px 32px;
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
+        /* ── BACK BUTTON (stylized) ── */
+        .back-container { padding: 18px 28px 0; }
         .back-btn {
-            background: transparent;
-            border: 1px solid var(--gold-dim);
-            color: var(--text-muted);
-            padding: 6px 16px;
-            border-radius: 6px;
-            font-family: var(--sans);
-            font-size: 0.8rem;
-            font-weight: bold;
-            letter-spacing: 1.5px;
-            cursor: pointer;
-            transition: 0.2s;
+            display: inline-flex; align-items: center; gap: 6px;
+            background: linear-gradient(45deg, #C0152A, #e0294a);
+            color: var(--warm-champagne); padding: 8px 20px; border-radius: 6px;
+            font-weight: bold; border: none; cursor: pointer;
+            font-size: 0.85rem; font-family: var(--sans); letter-spacing: 1.5px; transition: 0.2s;
         }
-        .back-btn:hover {
-            border-color: var(--burnished-gold);
-            color: var(--burnished-gold);
-            background: rgba(212,160,23,0.08);
-        }
-        .page-breadcrumb {
-            font-family: var(--sans);
-            font-size: 0.72rem;
-            letter-spacing: 2.5px;
-            color: var(--text-muted);
-            text-transform: uppercase;
-        }
-        .page-breadcrumb span { color: var(--burnished-gold); }
+        .back-btn:hover { box-shadow: 0 0 16px rgba(192,21,42,0.55); transform: scale(1.03); }
 
         /* ── MAIN LAYOUT ── */
         .game-wrapper {
@@ -774,7 +743,7 @@ if ($bets_confirmed) {
         <div class="rule-section">
             <div class="rule-section-title">PAYOUTS</div>
             <table class="rule-table">
-                <thead><tr><th>Match Type</th><th>Multiplier</th><th>Example (Bet 100)</th></tr></thead>
+                <thead> <th>Match Type</th><th>Multiplier</th><th>Example (Bet 100)</th> </thead>
                 <tbody>
                     <tr><td>Exactly one die matches</td><td>2x</td><td>Win 200 (100 profit)</td></tr>
                     <tr><td>Both dice match</td><td>4x</td><td>Win 400 (300 profit)</td></tr>
@@ -806,19 +775,18 @@ if ($bets_confirmed) {
         <div class="header-divider"></div>
         <div class="header-balance">
             <span class="balance-label">Your Balance</span>
-            <span class="balance-amount">&#8369;<?php echo htmlspecialchars($balance_display); ?></span>
+            <span class="balance-amount">₱<?php echo htmlspecialchars($balance_display); ?></span>
         </div>
         <button class="btn-deposit" onclick="location.href='topup.php'">+ TOP UP</button>
     </div>
 </header>
 
-<!-- Sub-header with breadcrumb + back -->
-<div class="sub-header">
+<!-- Back button (stylized) -->
+<div class="back-container">
     <form method="post" style="display:inline;">
         <input type="hidden" name="action" value="back">
-        <button type="submit" class="back-btn">&#8592; BACK</button>
+        <button type="submit" class="back-btn">&#8592; Back to Homepage</button>
     </form>
-    <span class="page-breadcrumb">Homepage &rsaquo; <span>Color Game</span></span>
 </div>
 
 <div class="game-wrapper">
@@ -861,7 +829,7 @@ if ($bets_confirmed) {
                                 style="background:<?php echo $color_classes[$color]; ?>;">
                             <?php echo strtoupper($color); ?>
                             <?php if ($currentBet > 0): ?>
-                                <span class="bet-amount-badge">&#8369;<?php echo number_format($currentBet); ?></span>
+                                <span class="bet-amount-badge">₱<?php echo number_format($currentBet); ?></span>
                             <?php endif; ?>
                         </button>
                     <?php endforeach; ?>
@@ -879,13 +847,13 @@ if ($bets_confirmed) {
                     <?php foreach ($bets as $color => $amount): ?>
                         <div class="bets-list-row">
                             <span class="bets-list-color" style="color:<?php echo $color_classes[$color]; ?>"><?php echo $color; ?></span>
-                            <span class="bets-list-amount">&#8369;<?php echo number_format($amount); ?></span>
+                            <span class="bets-list-amount">₱<?php echo number_format($amount); ?></span>
                         </div>
                     <?php endforeach; ?>
                 </div>
                 <div class="bets-total-row">
                     <span class="bets-total-label">TOTAL BET</span>
-                    <span class="bets-total-value">&#8369;<?php echo number_format($total_bets); ?></span>
+                    <span class="bets-total-value">₱<?php echo number_format($total_bets); ?></span>
                 </div>
             <?php endif; ?>
 
@@ -908,26 +876,18 @@ if ($bets_confirmed) {
             <div class="info-pills">
                 <div class="info-pill">
                     <span class="pill-label">Balance</span>
-                    <span class="pill-value">&#8369;<?php echo number_format($_SESSION['balance']); ?></span>
+                    <span class="pill-value">₱<?php echo number_format($_SESSION['balance']); ?></span>
                 </div>
                 <div class="info-pill">
                     <span class="pill-label">Total Bet</span>
-                    <span class="pill-value">&#8369;<?php echo number_format($total_bets); ?></span>
+                    <span class="pill-value">₱<?php echo number_format($total_bets); ?></span>
                 </div>
                 <?php foreach ($bets as $color => $amount): ?>
                 <div class="info-pill">
                     <span class="pill-label" style="color:<?php echo $color_classes[$color]; ?>"><?php echo strtoupper($color); ?></span>
-                    <span class="pill-value">&#8369;<?php echo number_format($amount); ?></span>
+                    <span class="pill-value">₱<?php echo number_format($amount); ?></span>
                 </div>
                 <?php endforeach; ?>
-                <div class="info-pill">
-                    <span class="pill-label">Max Possible Win</span>
-                    <span class="pill-value">&#8369;<?php
-                        $max_win = 0;
-                        foreach ($bets as $color => $amount) $max_win = max($max_win, $amount * 4);
-                        echo number_format($max_win);
-                    ?></span>
-                </div>
             </div>
             <p class="active-note">Bets are locked. Roll when ready.</p>
             <div class="locked-badge">BETS LOCKED — READY TO ROLL</div>
@@ -991,9 +951,9 @@ if ($bets_confirmed) {
                     <?php foreach ($roll_results as $color => $res): ?>
                         <div class="roll-breakdown-row">
                             <span class="rb-color" style="color:<?php echo $color_classes[$color]; ?>"><?php echo $color; ?></span>
-                            <span>&#8369;<?php echo number_format($res['bet']); ?> &middot; <?php echo $res['matches']; ?> match<?php echo $res['matches'] !== 1 ? 'es' : ''; ?></span>
+                            <span>₱<?php echo number_format($res['bet']); ?> &middot; <?php echo $res['matches']; ?> match<?php echo $res['matches'] !== 1 ? 'es' : ''; ?></span>
                             <span class="<?php echo $res['win'] > 0 ? 'rb-win' : 'rb-loss'; ?>">
-                                <?php echo $res['win'] > 0 ? '+&#8369;' . number_format($res['win']) : 'Lost'; ?>
+                                <?php echo $res['win'] > 0 ? '+₱' . number_format($res['win']) : 'Lost'; ?>
                             </span>
                         </div>
                     <?php endforeach; ?>
@@ -1044,7 +1004,7 @@ if ($bets_confirmed) {
                         <div class="h-row">
                             <span class="hc-time"><?php echo htmlspecialchars($entry['time']); ?></span>
                             <span class="hc-pattern" title="<?php echo htmlspecialchars($entry['pattern']); ?>"><?php echo htmlspecialchars($entry['pattern']); ?></span>
-                            <span class="hc-bet">&#8369;<?php echo number_format($entry['bet']); ?></span>
+                            <span class="hc-bet">₱<?php echo number_format($entry['bet']); ?></span>
                             <span class="hc-dice"><?php echo substr($entry['dice1'],0,1).'|'.substr($entry['dice2'],0,1); ?></span>
                             <span class="hc-result <?php echo $entry['result']==='WIN'?'win':($entry['result']==='LOSS'?'loss':'push'); ?>">
                                 <?php echo $entry['result']; ?>
